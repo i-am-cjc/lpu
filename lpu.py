@@ -1,7 +1,13 @@
 import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", help="Enable debugging", action="store_true")
+
+args = parser.parse_args()
 
 VERSION = "0.1"
-DEBUG = True
+DEBUG = args.debug
 
 print("LPU v" + VERSION);
 
@@ -62,7 +68,7 @@ def fetch():
     global pc, ir
     ir = mem[pc]
     pc += 1
-    if pc > 4096:
+    if pc >= 4096:
         pc = 0;
 
 def execute():
