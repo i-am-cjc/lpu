@@ -9,7 +9,8 @@ args = parser.parse_args()
 VERSION = "0.1"
 DEBUG = args.debug
 
-print("LPU v" + VERSION);
+if DEBUG:
+    print("LPU v" + VERSION);
 
 MEMSIZE = 4096
 
@@ -43,7 +44,9 @@ mem[16] = 0x60AC # L LDA A = m[addr]
 mem[17] = 0xC000 # OUT A
 mem[18] = 0x60B0 # D LDA A = m[addr] 
 mem[19] = 0xC000 # OUT A
-mem[20] = 0xF000 # HALT
+mem[20] = 0x60B1 # D LDA A = m[addr] 
+mem[21] = 0xC000 # OUT A
+mem[22] = 0xF000 # HALT
 
 
 # HELLO WORLD
@@ -54,6 +57,7 @@ mem[0xAD] = ord('o')
 mem[0xAE] = ord('w')
 mem[0xAF] = ord('r')
 mem[0xB0] = ord('d')
+mem[0xB1] = ord('\n')
 
 def print_debug(op):
     global pc, ir, addr, a
@@ -118,7 +122,7 @@ def execute():
         a = 'x'
     elif op == 0x0C:
         #OUT
-        print(chr(a))
+        print(chr(a), end='')
     elif op == 0x0D:
         #RAL
         if (a & 0x8000):
@@ -130,7 +134,8 @@ def execute():
         a = cs
     elif op == 0x0F:
         #HLT
-        print("HLT Called\n")
+        if DEBUG:
+            print("HLT Called\n")
         sys.exit()
 
 while(1):
