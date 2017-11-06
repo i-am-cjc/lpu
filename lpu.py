@@ -1,13 +1,17 @@
+#!/usr/bin/python3
 import sys
 import argparse
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug", help="Enable debugging", action="store_true")
+parser.add_argument("-s", "--speed", type=int, default=100, help="Operations Per Second")
 
 args = parser.parse_args()
 
 VERSION = "0.1"
 DEBUG = args.debug
+SPEED = args.speed
 
 if DEBUG:
     print("LPU v" + VERSION);
@@ -122,7 +126,7 @@ def execute():
         a = 'x'
     elif op == 0x0C:
         #OUT
-        print(chr(a), end='')
+        print(chr(a), flush=True, end='')
     elif op == 0x0D:
         #RAL
         if (a & 0x8000):
@@ -137,6 +141,7 @@ def execute():
         if DEBUG:
             print("HLT Called\n")
         sys.exit()
+    time.sleep(1.0/SPEED)
 
 while(1):
     fetch();
