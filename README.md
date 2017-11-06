@@ -1,10 +1,9 @@
 LPU
 ===
 
-Simple CPU, based on Caxton Foster's Blue CPU
+The Linc Processing Unit, a aimple CPU, based on Caxton Foster's Blue CPU
 
 * 16 instructions
-* Video chips reads from a specific memory each clock cycle and renders?
 * 4k of memory
 * 16bit bus
 
@@ -29,7 +28,7 @@ Simple CPU, based on Caxton Foster's Blue CPU
 * 0xB INP A = getch()
 * 0xC OUT putch(a)
 * 0xD RAL if (a AND 0x800) A = A << 1 | 1, else A = A << 1;
-* 0xE CSA A = CS -- potential make this trigger a "render" rather than use CS
+* 0xE CSA A = CS 
 * 0xF HLT Halt the CPU
 
 0xABCD A = instruction, BCD is data / IR
