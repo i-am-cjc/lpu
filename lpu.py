@@ -13,6 +13,8 @@ VERSION = "0.1"
 DEBUG = args.debug
 SPEED = args.speed
 
+debug_output = ""
+
 if DEBUG:
     print("LPU v" + VERSION);
 
@@ -29,10 +31,10 @@ mem = []
 for i in range(0, MEMSIZE-1):
     mem.append(0x0) # NOPs for days
 
-mem[1] = 0x60AA # H LDA A = m[addr] 
-mem[2] = 0xC000 # OUT A
-mem[3] = 0x60AB # E LDA A = m[addr] 
-mem[4] = 0xC000 # OUT A
+mem[1] = 0x60AA # H LDA AA = m[addr] 
+mem[2] = 0xC000 # OUT
+mem[3] = 0x60AB # E LDA AB = m[addr] 
+mem[4] = 0xC000 # OUT
 mem[5] = 0x60AC # L LDA A = m[addr] 
 mem[6] = 0xC000 # OUT A
 mem[7] = 0xC000 # OUT A
@@ -64,13 +66,15 @@ mem[0xB0] = ord('d')
 mem[0xB1] = ord('\n')
 
 def print_debug(op):
-    global pc, ir, addr, a
-    print("State OP: " + str(op) 
-            + " PC: " + str(pc) 
-            + " IR: " + str(ir) 
-            + " ADDR: " + str(addr) 
-            + " A: " + str(a));
-    input()
+    global debug_output, pc, ir, addr, a
+    print(debug_output)
+    print("State OP: " + hex(op) 
+            + " PC: " + hex(pc) 
+            + " IR: " + hex(ir) 
+            + " ADDR: " + hex(addr) 
+            + " A: " + hex(a));
+    if not args.speed:
+        input()
 
 def fetch():
     global pc, ir
@@ -80,9 +84,10 @@ def fetch():
         pc = 0;
 
 def execute():
-    global pc, ir, addr, a
+    global debug_output, pc, ir, addr, a
     op = ir >> 12;
     addr = ir & 0xfff
+
     if DEBUG:
         print_debug(op)
 
@@ -126,7 +131,10 @@ def execute():
         a = 'x'
     elif op == 0x0C:
         #OUT
-        print(chr(a), flush=True, end='')
+        if not DEBUG:
+            print(chr(a), flush=True, end='')
+        else:
+            debug_output += chr(a)
     elif op == 0x0D:
         #RAL
         if (a & 0x8000):
