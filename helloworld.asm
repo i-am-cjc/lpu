@@ -1,0 +1,23 @@
+.start
+	LDA 0xAA
+	OUT
+	LDA 0xAB
+	OUT
+	LDA 0xAC
+	OUT
+	OUT
+	LDA 0xAD
+	OUT
+	LDA 0xAE
+	OUT
+	LDA 0xAD
+	OUT
+	LDA 0xAF
+	OUT
+	LDA 0xAC
+	OUT
+	LDA 0xB0
+	OUT
+	HLT
+.data
+	helowrd,0xAA
