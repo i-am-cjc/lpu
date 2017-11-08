@@ -12,6 +12,7 @@ args = parser.parse_args()
 VERSION = "0.1"
 DEBUG = args.debug
 SPEED = args.speed
+WIDTH = 16
 
 debug_output = ""
 
@@ -28,57 +29,34 @@ a = 0
 
 # INIT Memory to be 0
 mem = []
-for i in range(0, MEMSIZE-1):
-    mem.append(0x0) # NOPs for days
 
-mem[1] = 0x60AA # H LDA AA = m[addr] 
-mem[2] = 0xC000 # OUT
-mem[3] = 0x60AB # E LDA AB = m[addr] 
-mem[4] = 0xC000 # OUT
-mem[5] = 0x60AC # L LDA A = m[addr] 
-mem[6] = 0xC000 # OUT A
-mem[7] = 0xC000 # OUT A
-mem[8] = 0x60AD # O LDA A = m[addr] 
-mem[9] = 0xC000 # OUT A
-mem[10] = 0x60AE # W LDA A = m[addr] 
-mem[11] = 0xC000 # OUT A
-mem[12] = 0x60AD # O LDA A = m[addr] 
-mem[13] = 0xC000 # OUT A
-mem[14] = 0x60AF # R LDA A = m[addr] 
-mem[15] = 0xC000 # OUT A
-mem[16] = 0x60AC # L LDA A = m[addr] 
-mem[17] = 0xC000 # OUT A
-mem[18] = 0x60B0 # D LDA A = m[addr] 
-mem[19] = 0xC000 # OUT A
-mem[20] = 0x60B1 # D LDA A = m[addr] 
-mem[21] = 0xC000 # OUT A
-mem[22] = 0xF000 # HALT
+# Load the rom.
+ROM = "bin/helloworld.bin"
 
+with open(ROM, 'rb') as in_rom:
+    while True:
+        data = in_rom.read(2);
+        if data == b'':
+            break;
+        mem.append(data.hex());
 
-# HELLO WORLD
-mem[0xAA] = ord('h')
-mem[0xAB] = ord('e')
-mem[0xAC] = ord('l')
-mem[0xAD] = ord('o')
-mem[0xAE] = ord('w')
-mem[0xAF] = ord('r')
-mem[0xB0] = ord('d')
-mem[0xB1] = ord('\n')
+if DEBUG:
+    print(mem);
 
 def print_debug(op):
     global debug_output, pc, ir, addr, a
-    print(debug_output)
+    print("OUT: " + debug_output)
     print("State OP: " + hex(op) 
             + " PC: " + hex(pc) 
             + " IR: " + hex(ir) 
             + " ADDR: " + hex(addr) 
-            + " A: " + hex(a));
+            + " A: " + str(a));
     if not args.speed:
         input()
 
 def fetch():
     global pc, ir
-    ir = mem[pc]
+    ir = int(mem[pc], 16)
     pc += 1
     if pc >= 4096:
         pc = 0;
@@ -120,7 +98,7 @@ def execute():
         a = pc & 0xFFFF
         pc = addr
     elif op == 0x09:
-        # JMA
+        # JMA IF A is ZERO...
         if a & 0x8000:
             pc = addr
     elif op == 0x0A:
@@ -131,10 +109,11 @@ def execute():
         a = 'x'
     elif op == 0x0C:
         #OUT
+        out = int(a, 16)
         if not DEBUG:
-            print(chr(a), flush=True, end='')
+            print(chr(out), flush=True, end='')
         else:
-            debug_output += chr(a)
+            debug_output += chr(out)
     elif op == 0x0D:
         #RAL
         if (a & 0x8000):
@@ -146,8 +125,7 @@ def execute():
         a = cs
     elif op == 0x0F:
         #HLT
-        if DEBUG:
-            print("HLT Called\n")
+        print("\nHLT Called\n")
         sys.exit()
     time.sleep(1.0/SPEED)
 
