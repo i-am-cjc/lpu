@@ -6,6 +6,7 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug", help="Enable debugging", action="store_true")
 parser.add_argument("-s", "--speed", type=int, default=100, help="Operations Per Second")
+parser.add_argument("rom", help="The ROM to load")
 
 args = parser.parse_args()
 
@@ -31,14 +32,18 @@ a = 0
 mem = []
 
 # Load the rom.
-ROM = "bin/helloworld.bin"
+ROM = args.rom
 
-with open(ROM, 'rb') as in_rom:
-    while True:
-        data = in_rom.read(2);
-        if data == b'':
-            break;
-        mem.append(data.hex());
+try:
+    with open(ROM, 'rb') as in_rom:
+        while True:
+            data = in_rom.read(2);
+            if data == b'':
+                break;
+            mem.append(data.hex());
+except:
+    print("Rom not found")
+    sys.exit(-1)
 
 if DEBUG:
     print(mem);
