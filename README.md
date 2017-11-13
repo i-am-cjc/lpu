@@ -1,13 +1,12 @@
 LPU
 ===
 
-The Linc Processing Unit, a aimple CPU, based on Caxton Foster's Blue CPU
+The Linc Processing Unit, a ~shitty~ simple CPU, based on Caxton Foster's Blue CPU, with a screen inspired by chip 8 tacked on for amusement
 
 * 16 instructions
-* 4k of memory
+* 4k memory locations of 2bytes each
 * 16bit bus
 
-* CS = console switch
 * A = accumulator (single register)
 * m = memory 4k of memory
 * pc = program counter
@@ -28,7 +27,7 @@ The Linc Processing Unit, a aimple CPU, based on Caxton Foster's Blue CPU
 * 0xB INP A = getch()
 * 0xC OUT putch(a)
 * 0xD RAL if (a AND 0x800) A = A << 1 | 1, else A = A << 1;
-* 0xE CSA A = CS 
+* 0xE DRW Draw the screen
 * 0xF HLT Halt the CPU
 
 0xABCD A = instruction, BCD is data / IR
@@ -48,3 +47,10 @@ execute
   op = IR >> 2
   
   addr = IR & 0xfff ??????
+
+screen
+------
+
+64x32 screen inspired by CHIP-8
+
+Using address space 0xF7F-0xFFF is display which is 128 memory locations of 16 bits to represent the monochrome screen. Call 0xE / DRW to draw the screen.

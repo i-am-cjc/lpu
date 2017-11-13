@@ -41,6 +41,8 @@ try:
             if data == b'':
                 break;
             mem.append(data.hex());
+        while len(mem) < MEMSIZE:
+            mem.append(0x0000)
 except:
     print("Rom not found")
     sys.exit(-1)
@@ -68,6 +70,7 @@ def fetch():
 
 def execute():
     global debug_output, pc, ir, addr, a
+    time.sleep(1.0/SPEED)
     op = ir >> 12;
     addr = ir & 0xfff
 
@@ -126,13 +129,12 @@ def execute():
         else:
             a = a << 1
     elif op == 0x0E:
-        #CSA
-        a = cs
+        # DRW
+        pass
     elif op == 0x0F:
         #HLT
         print("\nHLT Called\n")
         sys.exit()
-    time.sleep(1.0/SPEED)
 
 while(1):
     fetch();
