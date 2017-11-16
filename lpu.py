@@ -2,9 +2,12 @@
 import sys
 import argparse
 import time
+from mem import lpu_memory
+from video import lpu_video
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--debug", help="Enable debugging", action="store_true")
+parser.add_argument("-D", "--decompile", help="Decompile the rom rather than running it", action="store_true")
 parser.add_argument("-s", "--speed", type=int, default=100, help="Operations Per Second")
 parser.add_argument("rom", help="The ROM to load")
 
@@ -13,9 +16,10 @@ args = parser.parse_args()
 VERSION = "0.1"
 DEBUG = args.debug
 SPEED = args.speed
+DECOMPILE = args.decompile
 WIDTH = 16
 
-debug_output = ""
+output = ""
 
 if DEBUG:
     print("LPU v" + VERSION);
@@ -28,61 +32,58 @@ ir = 0
 addr = 0
 a = 0
 
-# INIT Memory to be 0
-mem = []
-
 # Load the rom.
 ROM = args.rom
 
-try:
-    with open(ROM, 'rb') as in_rom:
-        while True:
-            data = in_rom.read(2);
-            if data == b'':
-                break;
-            mem.append(data.hex());
-        while len(mem) < MEMSIZE:
-            mem.append(0x0000)
-except:
-    print("Rom not found")
-    sys.exit(-1)
+mem = lpu_memory(MEMSIZE, ROM)
+video = lpu_video(mem)
 
-if DEBUG:
-    print(mem);
+def decompile(op, addr, pc, ir):
+    ops = [ "NOP", "ADD", "XOR", "AND", "OR", "NOT", "LDA", "STA", "SRJ", "JMA", "JMP", "INP", "OUT", "RAL", "DRW", "HLT" ]
+    return "[0x" + hex(pc-1)[2:].zfill(3) + "] 0x" + hex(ir)[2:].zfill(4) + " - " + ops[op] + " 0x" + hex(addr)[2:].zfill(3)
 
 def print_debug(op):
-    global debug_output, pc, ir, addr, a
-    print("OUT: " + debug_output)
+    global output, pc, ir, addr, a
+    print("OUT: " + output)
     print("State OP: " + hex(op) 
             + " PC: " + hex(pc) 
             + " IR: " + hex(ir) 
             + " ADDR: " + hex(addr) 
             + " A: " + str(a));
-    if not args.speed:
+    if DEBUG:
         input()
 
 def fetch():
     global pc, ir
-    ir = int(mem[pc], 16)
+    ir = mem.get(pc)
     pc += 1
     if pc >= 4096:
         pc = 0;
 
+def print_screen():
+    global video
+    video.draw_buffer()
+    print ("-------------")
+
 def execute():
-    global debug_output, pc, ir, addr, a
-    time.sleep(1.0/SPEED)
+    global video, output, pc, ir, addr, a
     op = ir >> 12;
     addr = ir & 0xfff
 
-    if DEBUG:
-        print_debug(op)
+    if DECOMPILE:
+        print(decompile(op, addr, pc, ir))
+        if op == 0xF:
+            #HLT
+            sys.exit()
+        return 
 
+    time.sleep(1.0/SPEED)
     if op == 0x0:
         # NOP
         pass
     elif op == 0x1:
         # ADD
-        a = a + mem[addr]
+        a += mem.get(addr)
     elif op == 0x2:
         # XOR
         a ^= a
@@ -97,10 +98,10 @@ def execute():
         a = ~a
     elif op == 0x06:
         # LDA
-        a = mem[addr]
+        a = mem.get(addr)
     elif op == 0x07:
         #STA
-        mem[addr] = a
+        mem.set(addr,a)
     elif op == 0x08:
         #SRJ
         a = pc & 0xFFFF
@@ -117,11 +118,7 @@ def execute():
         a = 'x'
     elif op == 0x0C:
         #OUT
-        out = int(a, 16)
-        if not DEBUG:
-            print(chr(out), flush=True, end='')
-        else:
-            debug_output += chr(out)
+        output += chr(a)
     elif op == 0x0D:
         #RAL
         if (a & 0x8000):
@@ -130,11 +127,16 @@ def execute():
             a = a << 1
     elif op == 0x0E:
         # DRW
+        video.redraw()
         pass
     elif op == 0x0F:
         #HLT
         print("\nHLT Called\n")
         sys.exit()
+
+    print(chr(27) + "[2J" + chr(27) + "[H")
+    print_screen()
+    print_debug(op)
 
 while(1):
     fetch();
