@@ -2,6 +2,8 @@
 import sys
 import argparse
 import time
+
+sys.path.append("./component")
 from mem import lpu_memory
 from video import lpu_video
 
@@ -63,7 +65,6 @@ def fetch():
 def print_screen():
     global video
     video.draw_buffer()
-    print ("-------------")
 
 def execute():
     global video, output, pc, ir, addr, a
@@ -73,7 +74,6 @@ def execute():
     if DECOMPILE:
         print(decompile(op, addr, pc, ir))
         if op == 0xF:
-            #HLT
             sys.exit()
         return 
 
