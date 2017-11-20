@@ -8,23 +8,22 @@ from mem import lpu_memory
 from video import lpu_video
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--debug", help="Enable debugging", action="store_true")
 parser.add_argument("-D", "--decompile", help="Decompile the rom rather than running it", action="store_true")
 parser.add_argument("-s", "--speed", type=int, default=100, help="Operations Per Second")
+parser.add_argument("-S", "--step", help="Step Through", action="store_true")
 parser.add_argument("rom", help="The ROM to load")
 
 args = parser.parse_args()
 
 VERSION = "0.1"
-DEBUG = args.debug
 SPEED = args.speed
+STEP = args.step
 DECOMPILE = args.decompile
 WIDTH = 16
 
 output = ""
 
-if DEBUG:
-    print("LPU v" + VERSION);
+print("LPU v" + VERSION);
 
 MEMSIZE = 4096
 
@@ -47,13 +46,12 @@ def decompile(op, addr, pc, ir):
 def print_debug(op):
     global output, pc, ir, addr, a
     print("OUT: " + output)
-    print("State OP: " + hex(op) 
-            + " PC: " + hex(pc) 
-            + " IR: " + hex(ir) 
+    print("State PC: " + hex(pc) 
+            + "  OP: " + hex(op)
             + " ADDR: " + hex(addr) 
+            + " IR: " + hex(ir) 
             + " A: " + str(a));
-    if DEBUG:
-        input()
+    print(decompile(op, addr, pc, ir))
 
 def fetch():
     global pc, ir
@@ -136,7 +134,10 @@ def execute():
 
     print(chr(27) + "[2J" + chr(27) + "[H")
     print_screen()
-    print_debug(op)
+
+    if STEP:
+        print_debug(op)
+        input()
 
 while(1):
     fetch();
